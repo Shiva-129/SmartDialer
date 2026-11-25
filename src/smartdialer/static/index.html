@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartDialer — Safety Controller & Operations Console</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --subtle: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --muted: #64748b;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-soft: #e0f2fe;
+      --green: #059669;
+      --green-soft: #d1fae5;
+      --amber: #d97706;
+      --amber-soft: #fef3c7;
+      --purple: #7c3aed;
+      --purple-soft: #ede9fe;
+      --red: #dc2626;
+      --red-soft: #fee2e2;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header & Navigation */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .nav-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 62px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+    .tabs {
+      display: flex;
+      gap: 4px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      padding: 19px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .status-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Pills & Badges */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--subtle);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .pill.ok { background: var(--green-soft); border-color: #a7f3d0; color: #065f46; }
+    .pill.info { background: var(--primary-soft); border-color: #bae6fd; color: #075985; }
+    .pill.warn { background: var(--amber-soft); border-color: #fde68a; color: #92400e; }
+    .pill.purple { background: var(--purple-soft); border-color: #ddd6fe; color: #5b21b6; }
+    .pill.err { background: var(--red-soft); border-color: #fecaca; color: #991b1b; }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      display: inline-block;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 24px 40px;
+      display: grid;
+      gap: 18px;
+    }
+    .tab-panel { display: none; gap: 18px; }
+    .tab-panel.active { display: grid; }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .card-title {
+      margin: 0;
+      font-size: 0.96rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .card-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* Controls & Inputs */
+    .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    select, input, textarea {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    button {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    button:hover { background: var(--subtle); }
+    button.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+    button.primary:hover { background: var(--primary-hover); }
+    button.success {
+      background: var(--green);
+      border-color: var(--green);
+      color: #ffffff;
+    }
+    button.danger-outline {
+      color: var(--red);
+      border-color: #fca5a5;
+      background: #fff;
+    }
+    button.danger-outline:hover { background: var(--red-soft); }
+    button.ghost {
+      background: var(--subtle);
+      border-color: transparent;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+    button.sm { padding: 5px 9px; font-size: 0.76rem; border-radius: 6px; }
+
+    /* Segmented Control */
+    .seg {
+      display: inline-flex;
+      background: var(--subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .seg button {
+      border: none;
+      background: transparent;
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      color: var(--muted);
+    }
+    .seg button.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* Pipeline Banner */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 960px) { .pipeline-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .pipeline-grid { grid-template-columns: 1fr; } }
+    .pipe-step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 14px;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+    .pipe-step-title {
+      font-size: 0.84rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .pipe-step-desc {
+      font-size: 0.79rem;
+      color: var(--text-secondary);
+    }
+
+    /* KPI Row */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 960px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .kpi-grid { grid-template-columns: 1fr; } }
+    .kpi-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+    .kpi-val { font-size: 1.55rem; font-weight: 800; margin: 6px 0 4px; color: var(--text); }
+    .kpi-sub { font-size: 0.78rem; color: var(--text-secondary); }
+
+    /* Stacked Progress Bar */
+    .stack-bar {
+      display: flex;
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--subtle);
+      margin: 10px 0 8px;
+    }
+    .seg-free { background: #10b981; }
+    .seg-talk { background: #0284c7; }
+    .seg-dial { background: #f59e0b; }
+    .seg-wrap { background: #8b5cf6; }
+    .seg-off { background: #94a3b8; }
+
+    /* Two Column Workspace */
+    .split-main {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 1024px) { .split-main { grid-template-columns: 1fr; } }
+
+    /* Readable Call Rows */
+    .call-list { display: grid; gap: 10px; }
+    .call-row {
+      display: grid;
+      grid-template-columns: 1.25fr auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #ffffff;
+    }
+    @media (max-width: 820px) {
+      .call-row { grid-template-columns: 1fr; gap: 8px; }
+    }
+    .borrower-name { font-weight: 700; font-size: 0.9rem; }
+    .borrower-phone { font-size: 0.78rem; color: var(--muted); }
+    .stepper {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.74rem;
+      flex-wrap: wrap;
+    }
+    .step-chip {
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--subtle);
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .step-chip.cur-dial { background: var(--primary-soft); color: #075985; }
+    .step-chip.cur-ring { background: var(--amber-soft); color: #92400e; }
+    .step-chip.cur-talk { background: var(--green-soft); color: #065f46; }
+    .step-chip.cur-fail { background: var(--red-soft); color: #991b1b; }
+
+    /* Activity Feed */
+    .feed-list {
+      max-height: 360px;
+      overflow-y: auto;
+      display: grid;
+      gap: 10px;
+    }
+    .feed-entry {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--subtle);
+      font-size: 0.82rem;
+    }
+    .feed-time { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+    /* Agent Monitor Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    th, td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.76rem;
+      display: inline-grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    /* Stress Test & Failure Cards */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 1024px) { .scenario-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .scenario-grid { grid-template-columns: 1fr; } }
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 820px) { .demo-grid { grid-template-columns: 1fr; } }
+    .flow-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      font-size: 0.77rem;
+    }
+
+    /* Scale Bar Chart */
+    .bench-bar-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 190px;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.83rem;
+    }
+    .bench-track {
+      height: 16px;
+      background: var(--subtle);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bench-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #0284c7);
+      border-radius: 999px;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      place-items: center;
+      z-index: 50;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: grid; }
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+      display: grid;
+      gap: 12px;
+    }
+    .modal h3 { margin: 0; font-size: 1.05rem; }
+    .field { display: grid; gap: 5px; }
+    .field label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
+
+    /* Toggle Switch */
+    .switch-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .switch-track {
+      width: 36px;
+      height: 20px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      position: relative;
+      transition: background 0.15s;
+    }
+    .switch-track.on { background: var(--green); }
+    .switch-knob {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: left 0.15s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .switch-track.on .switch-knob { left: 18px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-inner">
+      <div class="brand-group">
+        <div class="brand">
+          <div class="brand-icon">SD</div>
+          <span>SmartDialer</span>
+        </div>
+        <nav class="tabs" aria-label="Main views">
+          <button class="tab-btn active" data-tab="live" onclick="switchTab('live')">Live Operations</button>
+          <button class="tab-btn" data-tab="agents" onclick="switchTab('agents')">Agent Monitor &amp; History</button>
+          <button class="tab-btn" data-tab="softphone" onclick="switchTab('softphone')">Agent Softphone</button>
+          <button class="tab-btn" data-tab="stress" onclick="switchTab('stress')">Stress Tests &amp; Recovery</button>
+        </nav>
+      </div>
+      <div class="status-group">
+        <span id="dbBadge" class="pill ok"><span class="dot"></span>DB Checking</span>
+        <span id="wsBadge" class="pill warn"><span class="dot"></span>WS Connecting</span>
+        <span id="provABadge" class="pill ok"><span class="dot"></span>Provider A: Healthy</span>
+        <button id="outageBtn" class="danger-outline sm" onclick="toggleProviderOutage('provider_a')">Simulate Outage</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- TAB 1: LIVE OPERATIONS -->
+    <section id="tab-live" class="tab-panel active">
+      <!-- Campaign & Controls Strip -->
+      <div class="card">
+        <div class="between">
+          <div class="row">
+            <select id="campaignSelect" style="min-width: 220px;"></select>
+            <button class="sm" onclick="openModal('campaignModal')">+ New Campaign</button>
+            <div class="seg" title="Switch campaign dialing strategy">
+              <button id="modeProgBtn" onclick="setMode('PROGRESSIVE')">Progressive 1:1</button>
+              <button id="modePredBtn" onclick="setMode('PREDICTIVE')">Predictive Auto</button>
+            </div>
+            <span id="borrowerQueueBadge" class="pill info">0 Borrowers Waiting</span>
+          </div>
+          <div class="row">
+            <button onclick="openModal('agentsModal')">+ Add Agents</button>
+            <button onclick="openModal('borrowersModal')">+ Add Borrowers</button>
+            <button class="ghost" onclick="seedDemoPool()" title="Quickly add 10 available agents and 25 sample borrowers">Demo Data</button>
+            <div class="switch-wrap" onclick="toggleAutoDial()" title="Automatically run a dial wave every 4 seconds">
+              <div id="autoDialTrack" class="switch-track"><div class="switch-knob"></div></div>
+              <span id="autoDialLabel">Auto-Dial: OFF</span>
+            </div>
+            <select id="dialProviderSelect" title="Select simulated or real Twilio carrier">
+              <option value="provider_a">Carrier: Provider A (Sim)</option>
+              <option value="provider_b">Carrier: Provider B (Sim)</option>
+              <option value="twilio">Carrier: Twilio (Real PSTN)</option>
+            </select>
+            <button class="primary" onclick="triggerDial()">Run 1 Dial Wave</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4-Step Story Pipeline -->
+      <div>
+        <div class="between" style="margin-bottom: 8px;">
+          <span class="card-title" style="font-size: 0.88rem;">How This Dial Wave Worked (Safety Controller Pipeline)</span>
+          <span class="card-sub">Invariant: Never dial agent-bound calls beyond reserved agent capacity</span>
+        </div>
+        <div class="pipeline-grid">
+          <div class="pipe-step">
+            <div class="pipe-step-title"><span>1. Pacing Engine</span><span id="pipeModePill" class="pill info">-</span></div>
+            <div id="pipePacing" class="pipe-step-desc">Run a dial wave to see how many calls pacing requests.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-step-title"><span>2. Safety Controller Gate</span><span id="pipeSafetyPill" class="pill ok">Ready</span></div>
+            <div id="pipeSafety" class="pipe-step-desc">Verifies free agents, ceiling &amp; carrier health before dialing.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-step-title"><span>3. Carrier Outbox</span><span id="pipeProvPill" class="pill">Provider A</span></div>
+            <div id="pipeOutbox" class="pipe-step-desc">Sends approved calls idempotently with lease fencing tokens.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-step-title"><span>4. Call &amp; Agent Bridge</span><span class="pill">Live</span></div>
+            <div id="pipeBridge" class="pipe-step-desc">0 Talking · 0 Ringing · 0 Wrap-Up · 0 Dropped</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Clean KPI Cards -->
+      <div class="kpi-grid">
+        <div class="card">
+          <div class="kpi-label" id="kpiAgentLabel">Agent Availability (0 Total)</div>
+          <div class="stack-bar" id="agentStackBar">
+            <div class="seg-free" style="width: 100%"></div>
+          </div>
+          <div class="kpi-sub" id="kpiAgentSub">0 Free · 0 Talking · 0 Dialing · 0 Wrap-Up</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">Safety Controller Guardrail</div>
+          <div class="between" style="margin-top: 4px;">
+            <div class="kpi-val" id="kpiSafetyVal">0 Violations</div>
+            <span id="kpiSafetyBadge" class="pill ok">Protected</span>
+          </div>
+          <div class="kpi-sub" id="kpiSafetySub">All dispatches strictly checked against reserved capacity</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">Answer Rate &amp; Avg Talk</div>
+          <div class="kpi-val" id="kpiTelemVal">-</div>
+          <div class="kpi-sub" id="kpiTelemSub">Utilization: 0%</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">Abandoned Calls Compliance</div>
+          <div class="kpi-val" id="kpiAbandVal">0.0% Dropped</div>
+          <div class="kpi-sub" id="kpiAbandSub" style="color: var(--green);">Safely under 3.0% limit</div>
+        </div>
+      </div>
+
+      <!-- Main 2-Column Area -->
+      <div class="split-main">
+        <!-- Left: Live Calls with Human Names + Simulator Controls -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Live Calls (Borrower &harr; Agent)</h2>
+              <span class="card-sub">Simulate carrier callbacks below to watch calls connect to agents in real time</span>
+            </div>
+            <span id="liveCallCountPill" class="pill">0 Active</span>
+          </div>
+          <div id="liveCallsList" class="call-list">
+            <div class="card-sub">No calls placed yet. Add agents &amp; borrowers, then click <strong>Run 1 Dial Wave</strong>.</div>
+          </div>
+        </div>
+
+        <!-- Right: Quick Agent Status + Plain-English Activity Feed -->
+        <div style="display: grid; gap: 18px;">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Quick Agent Status</h2>
+              <button class="ghost sm" onclick="switchTab('agents')">View all &rarr;</button>
+            </div>
+            <div id="quickAgentPills" class="row">
+              <span class="card-sub">No agents in this campaign yet.</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Plain-English Activity Feed</h2>
+              <span class="card-sub">Real-time WebSocket stream</span>
+            </div>
+            <div id="wsFeed" class="feed-list">
+              <div class="card-sub">Waiting for live campaign events...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: AGENT MONITOR & CALL HISTORY -->
+    <section id="tab-agents" class="tab-panel">
+      <!-- Supervisor Summary Strip -->
+      <div class="card">
+        <div class="between">
+          <div class="row" id="agentSummaryPills">
+            <span class="pill ok"><span class="dot"></span>Available: 0</span>
+            <span class="pill info"><span class="dot"></span>In Live Call: 0</span>
+            <span class="pill warn"><span class="dot"></span>Dialing / Reserved: 0</span>
+            <span class="pill purple"><span class="dot"></span>Wrap-Up: 0</span>
+            <span class="pill"><span class="dot"></span>Paused / Offline: 0</span>
+          </div>
+          <div class="row">
+            <input id="agentSearchInput" placeholder="Search agent or borrower..." oninput="renderAgentTab()" style="min-width: 210px;" />
+            <div class="seg" id="agentFilterSeg">
+              <button class="active" onclick="setAgentFilter('ALL', this)">All</button>
+              <button onclick="setAgentFilter('CONNECTED', this)">In Call</button>
+              <button onclick="setAgentFilter('AVAILABLE', this)">Free</button>
+              <button onclick="setAgentFilter('WRAP_UP', this)">Wrap-Up</button>
+              <button onclick="setAgentFilter('PAUSED', this)">Paused/Off</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="split-main">
+        <!-- Left 58%: Live Agent Roster -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Live Agent Roster — Who Is Active Right Now</h2>
+              <span class="card-sub">See every agent's current borrower, calls completed, and manage availability</span>
+            </div>
+            <button class="sm" onclick="openModal('agentsModal')">+ Add Agents</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Agent</th>
+                  <th>Status</th>
+                  <th>Current Activity / Borrower</th>
+                  <th>Campaign Stats</th>
+                  <th>Supervisor Action</th>
+                </tr>
+              </thead>
+              <tbody id="agentRosterBody">
+                <tr><td colspan="5" class="card-sub">No agents yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right 42%: Call History (Who Talked to Whom) -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Call History — Who Talked to Whom</h2>
+              <span class="card-sub">Full audit trail linking each borrower call to its handling agent</span>
+            </div>
+          </div>
+          <div id="callHistoryList" class="feed-list" style="max-height: 520px;">
+            <div class="card-sub">No completed or failed call history yet.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: STRESS TESTS & RECOVERY -->
+    <section id="tab-stress" class="tab-panel">
+      <!-- Scenarios A-D -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Traffic &amp; Answer-Rate Scenarios (A–D)</h2>
+            <span class="card-sub">Executes real predictive pacing &amp; Safety Controller simulations directly against PostgreSQL</span>
+          </div>
+          <button id="runSimsBtn" class="primary" onclick="runSimulations()">Run All 4 Scenarios + Recovery Tests</button>
+        </div>
+        <div id="scenarioCardsGrid" class="scenario-grid">
+          <div class="pipe-step"><div class="pipe-step-title">Scenario A: Low Answer (20%)</div><div class="pipe-step-desc">Click <strong>Run All 4 Scenarios</strong> to run live against PostgreSQL.</div></div>
+          <div class="pipe-step"><div class="pipe-step-title">Scenario B: Balanced (50%)</div><div class="pipe-step-desc">Tests balanced answer rate and 90s talk regime.</div></div>
+          <div class="pipe-step"><div class="pipe-step-title">Scenario C: High Volume (70%)</div><div class="pipe-step-desc">Tests high answer rate and long 180s talk times.</div></div>
+          <div class="pipe-step"><div class="pipe-step-title">Scenario D: Shock &amp; Failures</div><div class="pipe-step-desc">Injects answer drop + carrier failures to verify safe fallback.</div></div>
+        </div>
+      </div>
+
+      <!-- Failure Demos A-F in Plain English Cards -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">What Happens When Things Break? (Fault-Tolerance Verification)</h2>
+            <span class="card-sub">Live automated tests proving worker crashes, carrier outages, and duplicate alerts never corrupt state</span>
+          </div>
+        </div>
+        <div id="failureDemoGrid" class="demo-grid">
+          <div class="pipe-step">
+            <div class="pipe-step-title"><span>Worker Crash Recovery</span><span class="pill">Ready</span></div>
+            <div class="pipe-step-desc">Verifies stale reserved calls are rolled back and leaked agents freed.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-step-title"><span>Carrier Outage &amp; Recovery</span><span class="pill">Ready</span></div>
+            <div class="pipe-step-desc">Verifies automatic fallback to Progressive 1:1 mode on carrier outage.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-step-title"><span>Sudden Agent Drop (100 &rarr; 60)</span><span class="pill">Ready</span></div>
+            <div class="pipe-step-desc">Verifies Safety Controller caps stale pacing proposals immediately.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-step-title"><span>Duplicate &amp; Late Webhooks</span><span class="pill">Ready</span></div>
+            <div class="pipe-step-desc">Verifies duplicate callbacks and late RINGING events cannot regress terminal calls.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PostgreSQL Multi-Worker Scale Benchmark -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Multi-Worker PostgreSQL Scale Benchmark</h2>
+            <span class="card-sub">Concurrent workers racing via SELECT ... FOR UPDATE SKIP LOCKED (Baseline + Live Execution)</span>
+          </div>
+          <div class="row">
+            <span id="benchSafetyBadge" class="pill ok">0 Double-Booked Agents · 0 Errors</span>
+            <button id="runBenchBtn" onclick="runLiveBenchmark()">Run Live 100 / 1,000 Test</button>
+          </div>
+        </div>
+        <div id="benchChartArea">
+          <div class="bench-bar-row">
+            <strong>100 Agents</strong>
+            <div class="bench-track"><div class="bench-fill" style="width: 35%"></div></div>
+            <span>0.37s &middot; <strong>272.3 allocs/s</strong> (0 dup)</span>
+          </div>
+          <div class="bench-bar-row">
+            <strong>1,000 Agents</strong>
+            <div class="bench-track"><div class="bench-fill" style="width: 78%"></div></div>
+            <span>3.14s &middot; <strong>318.4 allocs/s</strong> (0 dup)</span>
+          </div>
+          <div class="bench-bar-row">
+            <strong>10,000 Agents</strong>
+            <div class="bench-track"><div class="bench-fill" style="width: 100%"></div></div>
+            <span>6.21s &middot; <strong>321.9 allocs/s</strong> (0 dup)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: INTERACTIVE AGENT SOFTPHONE -->
+    <section id="tab-softphone" class="tab-panel">
+      <div class="card">
+        <div class="between">
+          <div class="row">
+            <strong style="font-size:0.9rem;">Logged In As:</strong>
+            <select id="softphoneAgentSelect" onchange="onSoftphoneAgentChange()" style="min-width: 210px;"></select>
+            <span id="softphoneStatusPill" class="pill">-</span>
+          </div>
+          <div class="row">
+            <span id="twilioConfigPill" class="pill warn">Twilio PSTN: Checking...</span>
+            <button id="voiceTtsBtn" class="sm" onclick="toggleSoftphoneVoice()">Voice Aloud (TTS): OFF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="split-main">
+        <!-- Left: Softphone Headset Screen -->
+        <div class="card" id="softphoneCard">
+          <div class="card-sub">Select or add an agent to open the interactive Agent Softphone.</div>
+        </div>
+
+        <!-- Right: Live Customer Conversation Simulator & Twilio PSTN Info -->
+        <div style="display:grid; gap:18px;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Live Conversation Simulator (Customer &harr; Agent)</h2>
+                <span class="card-sub">Practice talking through a live connected call step-by-step</span>
+              </div>
+              <button class="sm ghost" onclick="copyChatToNotes()">Copy Summary to Notes</button>
+            </div>
+            <div id="softphoneChat" class="feed-list" style="min-height: 220px; max-height: 300px; background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+              <div class="card-sub">Answer/connect a call on the left to start talking with the customer.</div>
+            </div>
+            <div style="margin-top: 12px;">
+              <div class="card-sub" style="margin-bottom: 6px;">Quick Agent Script Replies (click while connected):</div>
+              <div class="row">
+                <button class="sm" onclick="softphoneAgentReply(0)">1. Greeting &amp; Verify</button>
+                <button class="sm" onclick="softphoneAgentReply(1)">2. Explain Overdue Balance</button>
+                <button class="sm" onclick="softphoneAgentReply(2)">3. Agree Payment Date</button>
+                <button class="sm" onclick="softphoneAgentReply(3)">4. Confirm SMS &amp; Close</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Real Phone Call Setup (Twilio PSTN Adapter)</h2>
+              <span id="twilioStatusBadge" class="pill">Checking</span>
+            </div>
+            <div id="twilioSetupInfo" class="card-sub">
+              Set <code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, <code>TWILIO_FROM_NUMBER</code>, and optional <code>TWILIO_WEBHOOK_BASE_URL</code> in <code>.env</code>, then select <strong>Carrier: Twilio (Real PSTN)</strong> above. Twilio callbacks post to <code>/api/v1/webhooks/twilio/status</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: New Campaign -->
+  <div id="campaignModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="between">
+        <h3>Create New Campaign</h3>
+        <button class="sm ghost" onclick="closeModal('campaignModal')">Close</button>
+      </div>
+      <div class="field">
+        <label for="newCampaignName">Campaign Name</label>
+        <input id="newCampaignName" value="Collections Live" />
+      </div>
+      <div class="field">
+        <label for="newCampaignMode">Dialing Mode</label>
+        <select id="newCampaignMode">
+          <option value="PREDICTIVE">Predictive Auto (Little's Law + Bridge)</option>
+          <option value="PROGRESSIVE">Progressive 1:1 (Strict Available Agent Match)</option>
+        </select>
+      </div>
+      <div class="between" style="margin-top: 6px;">
+        <button class="ghost" onclick="closeModal('campaignModal')">Cancel</button>
+        <button class="primary" onclick="createCampaign()">Create Campaign</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Agents -->
+  <div id="agentsModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="between">
+        <h3>Add Agents to Campaign</h3>
+        <button class="sm ghost" onclick="closeModal('agentsModal')">Close</button>
+      </div>
+      <div class="field">
+        <label for="agentNamesInput">Agent Names (comma-separated, or leave count mode below)</label>
+        <input id="agentNamesInput" placeholder="e.g. Ananya Rao, Vikram Patel, Neha Sharma" />
+      </div>
+      <div class="row">
+        <div class="field" style="flex: 1;">
+          <label for="agentCountInput">Or Quick Count</label>
+          <input id="agentCountInput" type="number" min="1" max="100" value="5" />
+        </div>
+        <div class="field" style="flex: 1;">
+          <label for="agentInitStatus">Initial Status</label>
+          <select id="agentInitStatus">
+            <option value="AVAILABLE">AVAILABLE (Ready Now)</option>
+            <option value="OFFLINE">OFFLINE</option>
+          </select>
+        </div>
+      </div>
+      <div class="between" style="margin-top: 6px;">
+        <button class="ghost" onclick="closeModal('agentsModal')">Cancel</button>
+        <button class="primary" onclick="submitAgentsModal()">Add Agents</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Borrowers -->
+  <div id="borrowersModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="between">
+        <h3>Add Borrowers to Call Queue</h3>
+        <button class="sm ghost" onclick="closeModal('borrowersModal')">Close</button>
+      </div>
+      <div class="field">
+        <label for="borrowersBulkInput">Enter one borrower per line: Name, Phone (or leave blank to generate)</label>
+        <textarea id="borrowersBulkInput" rows="4" placeholder="Priya Sharma, +15550101&#10;Marcus Lee, +15550102"></textarea>
+      </div>
+      <div class="field">
+        <label for="borrowerGenCount">Or Generate Sample Borrowers</label>
+        <input id="borrowerGenCount" type="number" min="1" max="200" value="10" />
+      </div>
+      <div class="between" style="margin-top: 6px;">
+        <button class="ghost" onclick="closeModal('borrowersModal')">Cancel</button>
+        <button class="primary" onclick="submitBorrowersModal()">Add to Queue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Wrap-Up Call Notes -->
+  <div id="notesModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="between">
+        <h3>Wrap-Up Call Notes</h3>
+        <button class="sm ghost" onclick="closeModal('notesModal')">Close</button>
+      </div>
+      <div id="notesCallContext" class="pill info" style="justify-self: start;">Call Details</div>
+      <div class="field">
+        <label for="callDispositionSelect">Outcome / Disposition</label>
+        <select id="callDispositionSelect">
+          <option value="Promise to Pay">Promise to Pay</option>
+          <option value="Resolved">Resolved / Issue Settled</option>
+          <option value="Callback Scheduled">Callback Scheduled</option>
+          <option value="Disputed">Customer Disputed / Escalated</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="callNotesText">What was discussed &amp; resolved?</label>
+        <textarea id="callNotesText" rows="4" placeholder="e.g. Customer confirmed payment of $250 by Friday via portal. Reminder SMS requested."></textarea>
+      </div>
+      <div class="between" style="margin-top: 6px;">
+        <button class="ghost" onclick="closeModal('notesModal')">Skip</button>
+        <div class="row">
+          <button onclick="submitCallNotes(false)">Save Notes</button>
+          <button id="saveAndFreeBtn" class="primary" onclick="submitCallNotes(true)">Save &amp; Mark Agent Free</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentCampaignId = null;
+    let ws = null;
+    let providerADegraded = false;
+    let autoDialTimer = null;
+    let agentFilter = 'ALL';
+    let cachedAgents = [];
+    let cachedCalls = [];
+    let lastEventId = null;
+
+    const FRIENDLY_NAMES = [
+      'Priya Sharma', 'Marcus Lee', 'Elena Gomez', 'Arjun Mehta',
+      'Sofia Reyes', 'Kiran Joshi', 'David Kim', 'Ananya Rao',
+      'Vikram Patel', 'Neha Kapoor', 'Carlos Diaz', 'Maya Lin'
+    ];
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function switchTab(tabKey) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabKey));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${tabKey}`));
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...opts,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        logFeed(`Action blocked: ${text}`, 'ERR');
+        throw new Error(text);
+      }
+      return res.json();
+    }
+
+    function logFeed(msg, kind = 'INFO') {
+      const feed = document.getElementById('wsFeed');
+      if (feed.children.length === 1 && feed.firstElementChild.classList.contains('card-sub')) {
+        feed.innerHTML = '';
+      }
+      const dotColor = kind === 'ERR' ? 'var(--red)' : kind === 'SAFE' ? 'var(--green)' : kind === 'WS' ? 'var(--primary)' : 'var(--purple)';
+      const div = document.createElement('div');
+      div.className = 'feed-entry';
+      div.innerHTML = `
+        <span class="dot" style="background:${dotColor}; margin-top:6px; flex-shrink:0;"></span>
+        <div>
+          <div>${escapeHtml(msg)}</div>
+          <div class="feed-time">${new Date().toLocaleTimeString()}</div>
+        </div>
+      `;
+      feed.prepend(div);
+      while (feed.children.length > 35) feed.lastElementChild.remove();
+    }
+
+    async function refreshHealth() {
+      try {
+        const h = await api('/health');
+        const db = document.getElementById('dbBadge');
+        db.innerHTML = `<span class="dot"></span>DB ${escapeHtml(h.database === 'connected' ? 'Connected' : h.database)}`;
+        db.className = 'pill ok';
+
+        const pA = h.providers.provider_a;
+        providerADegraded = !pA.healthy;
+        const bA = document.getElementById('provABadge');
+        bA.innerHTML = `<span class="dot"></span>Provider A: ${pA.healthy ? 'Healthy' : 'Outage'}`;
+        bA.className = pA.healthy ? 'pill ok' : 'pill err';
+        document.getElementById('outageBtn').textContent = pA.healthy ? 'Simulate Outage' : 'Restore Carrier';
+        document.getElementById('pipeProvPill').textContent = pA.healthy ? 'Provider A: Healthy' : 'Provider A: Degraded';
+        document.getElementById('pipeProvPill').className = pA.healthy ? 'pill ok' : 'pill err';
+
+        const tw = h.providers.twilio || { configured: false, healthy: true };
+        const twPill = document.getElementById('twilioConfigPill');
+        const twBadge = document.getElementById('twilioStatusBadge');
+        if (tw.configured) {
+          twPill.innerHTML = '<span class="dot"></span>Twilio PSTN: Ready';
+          twPill.className = 'pill ok';
+          twBadge.textContent = 'Configured';
+          twBadge.className = 'pill ok';
+        } else {
+          twPill.innerHTML = '<span class="dot"></span>Twilio PSTN: Credentials Not Set';
+          twPill.className = 'pill warn';
+          twBadge.textContent = 'Simulator Fallback Only';
+          twBadge.className = 'pill warn';
+        }
+      } catch (e) {
+        const db = document.getElementById('dbBadge');
+        db.innerHTML = '<span class="dot"></span>DB Offline';
+        db.className = 'pill err';
+      }
+    }
+
+    async function loadCampaigns() {
+      const list = await api('/api/v1/campaigns');
+      const sel = document.getElementById('campaignSelect');
+      sel.innerHTML = '';
+      if (list.length === 0) {
+        await api('/api/v1/campaigns', {
+          method: 'POST',
+          body: JSON.stringify({ name: 'Collections Live', mode: 'PREDICTIVE' }),
+        });
+        return loadCampaigns();
+      }
+      for (const c of list) {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        sel.appendChild(opt);
+      }
+      if (!currentCampaignId || !list.some(c => c.id === currentCampaignId)) {
+        currentCampaignId = list[0].id;
+      }
+      sel.value = currentCampaignId;
+      await refreshCampaignView();
+      connectWS(currentCampaignId);
+    }
+
+    document.getElementById('campaignSelect').addEventListener('change', async (e) => {
+      currentCampaignId = e.target.value;
+      await refreshCampaignView();
+      connectWS(currentCampaignId);
+    });
+
+    function connectWS(campaignId) {
+      if (ws) ws.close();
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      ws = new WebSocket(`${proto}://${location.host}/ws/campaigns/${campaignId}`);
+      ws.onopen = () => {
+        const b = document.getElementById('wsBadge');
+        b.innerHTML = '<span class="dot"></span>WS Live';
+        b.className = 'pill ok';
+      };
+      ws.onclose = () => {
+        const b = document.getElementById('wsBadge');
+        b.innerHTML = '<span class="dot"></span>WS Reconnecting';
+        b.className = 'pill warn';
+      };
+      ws.onmessage = async (evt) => {
+        const payload = JSON.parse(evt.data);
+        const d = payload.data || {};
+        if (payload.event_type === 'dial_cycle') {
+          logFeed(`Safety Gate ${d.decision}: approved ${d.approved} of ${d.requested} requested calls (${d.dispatched} dialing).`, 'SAFE');
+        } else if (payload.event_type === 'webhook_event') {
+          if (d.is_duplicate) {
+            logFeed(`Duplicate ${d.provider} callback (${d.event_type}) safely ignored.`, 'WS');
+          } else if (d.is_out_of_order) {
+            logFeed(`Late ${d.event_type} callback ignored (call stays ${d.new_call_state}).`, 'WS');
+          } else {
+            const agText = d.new_agent_state ? ` Agent is now ${d.new_agent_state}.` : '';
+            logFeed(`Carrier update: Call moved to ${d.new_call_state}.${agText}`, 'WS');
+          }
+        } else if (payload.event_type === 'agent_state') {
+          logFeed(`${d.name} switched to ${d.status}.`, 'INFO');
+        } else if (payload.event_type === 'agents_added') {
+          logFeed(`Added ${d.count} agent(s) to the campaign pool.`, 'INFO');
+        } else if (payload.event_type === 'campaign_updated') {
+          logFeed(`Campaign mode switched to ${d.mode}.`, 'INFO');
+        } else if (payload.event_type === 'call_notes_saved') {
+          logFeed(`Wrap-up notes saved for ${d.borrower_name || 'borrower'} (${d.disposition || 'Logged'}) by ${d.agent_name || 'agent'}.`, 'SAFE');
+        }
+        await refreshCampaignView();
+      };
+    }
+
+    async function refreshCampaignView() {
+      if (!currentCampaignId) return;
+      const [detail, logs, calls, agents] = await Promise.all([
+        api(`/api/v1/campaigns/${currentCampaignId}`),
+        api(`/api/v1/campaigns/${currentCampaignId}/safety-logs?limit=5`),
+        api(`/api/v1/campaigns/${currentCampaignId}/calls?limit=30`),
+        api(`/api/v1/campaigns/${currentCampaignId}/agents`),
+      ]);
+
+      cachedAgents = agents;
+      cachedCalls = calls;
+
+      // Mode pills & borrower waiting queue
+      document.getElementById('modeProgBtn').classList.toggle('active', detail.mode === 'PROGRESSIVE');
+      document.getElementById('modePredBtn').classList.toggle('active', detail.mode === 'PREDICTIVE');
+      document.getElementById('pipeModePill').textContent = detail.mode;
+      const waitingBorrowers = detail.borrower_counts.ELIGIBLE || 0;
+      document.getElementById('borrowerQueueBadge').textContent = `${waitingBorrowers} Borrowers Waiting`;
+
+      // Agent availability stacked bar
+      const avail = detail.agent_counts.AVAILABLE || 0;
+      const conn = detail.agent_counts.CONNECTED || 0;
+      const dial = (detail.agent_counts.RESERVED || 0) + (detail.agent_counts.DIALING || 0);
+      const wrap = detail.agent_counts.WRAP_UP || 0;
+      const off = (detail.agent_counts.PAUSED || 0) + (detail.agent_counts.OFFLINE || 0);
+      const total = Math.max(1, avail + conn + dial + wrap + off);
+
+      document.getElementById('kpiAgentLabel').textContent = `Agent Availability (${agents.length} Total)`;
+      document.getElementById('kpiAgentSub').textContent = `${avail} Free · ${conn} Talking · ${dial} Dialing · ${wrap} Wrap-Up`;
+      document.getElementById('agentStackBar').innerHTML = agents.length === 0
+        ? '<div class="seg-off" style="width:100%"></div>'
+        : `
+          <div class="seg-free" style="width:${(avail/total)*100}%"></div>
+          <div class="seg-talk" style="width:${(conn/total)*100}%"></div>
+          <div class="seg-dial" style="width:${(dial/total)*100}%"></div>
+          <div class="seg-wrap" style="width:${(wrap/total)*100}%"></div>
+          <div class="seg-off" style="width:${(off/total)*100}%"></div>
+        `;
+
+      // Telemetry & Abandonment KPIs
+      document.getElementById('kpiTelemVal').textContent = `${(detail.answer_rate_ema * 100).toFixed(0)}% Answered · ${Math.round(detail.average_talk_duration_sec)}s`;
+      document.getElementById('kpiTelemSub').textContent = `Team Utilization: ${detail.agent_utilization_pct}% · Completed: ${detail.call_counts.COMPLETED || 0}`;
+      document.getElementById('kpiAbandVal').textContent = `${detail.abandonment_rate_pct}% Dropped`;
+      const abandOk = detail.abandonment_rate_pct <= (detail.target_abandonment_rate * 100);
+      document.getElementById('kpiAbandSub').textContent = abandOk
+        ? `Safely under ${(detail.target_abandonment_rate * 100).toFixed(1)}% compliance limit`
+        : `Above ${(detail.target_abandonment_rate * 100).toFixed(1)}% compliance target`;
+      document.getElementById('kpiAbandSub').style.color = abandOk ? 'var(--green)' : 'var(--red)';
+
+      // 4-Step Pipeline Narrative from latest safety log
+      if (logs.length > 0) {
+        const latest = logs[0];
+        document.getElementById('pipePacing').textContent = `Requested ${latest.requested_calls} call(s) in ${latest.dialing_mode} mode.`;
+        const pill = document.getElementById('pipeSafetyPill');
+        pill.textContent = latest.decision;
+        pill.className = latest.decision === 'APPROVED' ? 'pill ok' : latest.decision === 'REJECTED' ? 'pill err' : 'pill warn';
+        document.getElementById('pipeSafety').textContent = `Approved ${latest.approved_calls} · ${latest.reasoning}`;
+        document.getElementById('pipeOutbox').textContent = latest.approved_calls > 0
+          ? `Dispatched ${latest.approved_calls} outbound call(s) via Provider A`
+          : '0 calls dispatched — Safety Controller protected agent pool.';
+
+        const sBadge = document.getElementById('kpiSafetyBadge');
+        sBadge.textContent = latest.decision === 'FALLBACK_TO_PROGRESSIVE' ? '1:1 Fallback' : 'Protected';
+        sBadge.className = latest.decision === 'FALLBACK_TO_PROGRESSIVE' ? 'pill warn' : 'pill ok';
+      }
+
+      const ringingNow = (detail.call_counts.RINGING || 0) + (detail.call_counts.INITIATED || 0) + (detail.call_counts.RESERVED || 0);
+      const abandonedTotal = calls.filter(c => c.termination_reason === 'ABANDONED').length;
+      document.getElementById('pipeBridge').textContent = `${conn} Talking · ${ringingNow} Dialing/Ringing · ${wrap} Wrap-Up · ${abandonedTotal} Dropped`;
+
+      // Render Live Calls (Active / Non-terminal first, then latest calls)
+      renderLiveCalls(calls);
+      renderQuickAgents(agents);
+      renderAgentTab(detail);
+      renderSoftphoneTab();
+    }
+
+    function buildCallStepper(status, reason) {
+      const s = status;
+      const isDial = s === 'RESERVED' || s === 'INITIATED';
+      const isRing = s === 'RINGING';
+      const isTalk = s === 'ANSWERED' || s === 'CONNECTED' || s === 'COMPLETED';
+      const isFail = s === 'FAILED' || s === 'CANCELLED';
+      return `
+        <div class="stepper">
+          <span class="step-chip ${isDial ? 'cur-dial' : ''}">${s === 'RESERVED' ? 'Reserved' : 'Dialing'}</span>
+          <span>&rarr;</span>
+          <span class="step-chip ${isRing ? 'cur-ring' : ''}">Ringing</span>
+          <span>&rarr;</span>
+          <span class="step-chip ${isTalk ? 'cur-talk' : isFail ? 'cur-fail' : ''}">${isFail ? (reason || s) : s === 'COMPLETED' ? 'Completed' : 'Talking'}</span>
+        </div>
+      `;
+    }
+
+    function renderLiveCalls(calls) {
+      const activeCalls = calls.filter(c => !['COMPLETED', 'FAILED', 'CANCELLED'].includes(c.status));
+      const shown = (activeCalls.length > 0 ? activeCalls : calls).slice(0, 10);
+      document.getElementById('liveCallCountPill').textContent = `${activeCalls.length} Active`;
+      const container = document.getElementById('liveCallsList');
+      if (shown.length === 0) {
+        container.innerHTML = '<div class="card-sub">No calls yet. Add agents &amp; borrowers, then click <strong>Run 1 Dial Wave</strong>.</div>';
+        return;
+      }
+
+      container.innerHTML = shown.map(c => {
+        const bName = escapeHtml(c.borrower_name || 'Borrower');
+        const bPhone = escapeHtml(c.borrower_phone || '');
+        const agentLabel = c.agent_name
+          ? (c.status === 'CONNECTED' || c.status === 'COMPLETED' ? `Handled by <strong>${escapeHtml(c.agent_name)}</strong>` : `Paired: <strong>${escapeHtml(c.agent_name)}</strong>`)
+          : '<span class="card-sub">Auto-match on answer</span>';
+
+        let buttons = '';
+        if (['RESERVED', 'INITIATED'].includes(c.status)) {
+          buttons = `
+            <button class="sm" onclick="sendWebhook('${c.id}', 'RINGING')">Simulate Ring</button>
+            <button class="sm primary" onclick="sendWebhook('${c.id}', 'ANSWERED')">Borrower Answers</button>
+          `;
+        } else if (c.status === 'RINGING') {
+          buttons = `
+            <button class="sm primary" onclick="sendWebhook('${c.id}', 'ANSWERED')">Borrower Answers</button>
+            <button class="sm" onclick="sendWebhook('${c.id}', 'FAILED')">No Answer</button>
+          `;
+        } else if (['ANSWERED', 'CONNECTED'].includes(c.status)) {
+          buttons = `
+            <button class="sm danger-outline" onclick="sendWebhook('${c.id}', 'COMPLETED')">End Call</button>
+            <button class="sm ghost" onclick="sendWebhook('${c.id}', 'ANSWERED', true)">Dup Test</button>
+          `;
+        } else {
+          buttons = `<span class="pill ${c.status === 'COMPLETED' ? 'ok' : 'err'}">${c.status}${c.duration_seconds ? ' · ' + Math.round(c.duration_seconds) + 's' : ''}</span>`;
+        }
+
+        return `
+          <div class="call-row">
+            <div>
+              <div class="borrower-name">${bName}</div>
+              <div class="borrower-phone">${bPhone} &middot; ${c.dialing_mode}</div>
+            </div>
+            <div>${buildCallStepper(c.status, c.termination_reason)}</div>
+            <div style="font-size:0.82rem;">${agentLabel}</div>
+            <div class="row">${buttons}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderQuickAgents(agents) {
+      const box = document.getElementById('quickAgentPills');
+      if (agents.length === 0) {
+        box.innerHTML = '<span class="card-sub">No agents in this campaign yet.</span>';
+        return;
+      }
+      box.innerHTML = agents.slice(0, 8).map(ag => {
+        const cls = ag.status === 'AVAILABLE' ? 'ok' : ag.status === 'CONNECTED' ? 'info' : ag.status === 'WRAP_UP' ? 'purple' : (ag.status === 'RESERVED' || ag.status === 'DIALING') ? 'warn' : '';
+        const label = ag.status === 'CONNECTED' ? 'Talking' : ag.status === 'AVAILABLE' ? 'Free' : ag.status;
+        return `<span class="pill ${cls}">${escapeHtml(ag.name)}: ${label}</span>`;
+      }).join('');
+    }
+
+    function setAgentFilter(filterVal, btn) {
+      agentFilter = filterVal;
+      document.querySelectorAll('#agentFilterSeg button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderAgentTab();
+    }
+
+    function renderAgentTab() {
+      const agents = cachedAgents;
+      const calls = cachedCalls;
+      const q = (document.getElementById('agentSearchInput').value || '').trim().toLowerCase();
+
+      const counts = { AVAILABLE: 0, CONNECTED: 0, DIAL: 0, WRAP_UP: 0, OFF: 0 };
+      agents.forEach(a => {
+        if (a.status === 'AVAILABLE') counts.AVAILABLE++;
+        else if (a.status === 'CONNECTED') counts.CONNECTED++;
+        else if (a.status === 'RESERVED' || a.status === 'DIALING') counts.DIAL++;
+        else if (a.status === 'WRAP_UP') counts.WRAP_UP++;
+        else counts.OFF++;
+      });
+
+      document.getElementById('agentSummaryPills').innerHTML = `
+        <span class="pill ok"><span class="dot"></span>Available: ${counts.AVAILABLE}</span>
+        <span class="pill info"><span class="dot"></span>In Live Call: ${counts.CONNECTED}</span>
+        <span class="pill warn"><span class="dot"></span>Dialing / Reserved: ${counts.DIAL}</span>
+        <span class="pill purple"><span class="dot"></span>Wrap-Up: ${counts.WRAP_UP}</span>
+        <span class="pill"><span class="dot"></span>Paused / Offline: ${counts.OFF}</span>
+      `;
+
+      const filtered = agents.filter(a => {
+        if (agentFilter === 'CONNECTED' && a.status !== 'CONNECTED') return false;
+        if (agentFilter === 'AVAILABLE' && a.status !== 'AVAILABLE') return false;
+        if (agentFilter === 'WRAP_UP' && a.status !== 'WRAP_UP') return false;
+        if (agentFilter === 'PAUSED' && !['PAUSED', 'OFFLINE'].includes(a.status)) return false;
+        if (q) {
+          const hay = `${a.name} ${a.current_borrower_name || ''} ${a.current_borrower_phone || ''}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      const tbody = document.getElementById('agentRosterBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="card-sub">No matching agents found.</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(a => {
+          const initials = a.name.split(/[\s-]+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || 'AG';
+          const pillCls = a.status === 'AVAILABLE' ? 'ok' : a.status === 'CONNECTED' ? 'info' : a.status === 'WRAP_UP' ? 'purple' : ['RESERVED', 'DIALING'].includes(a.status) ? 'warn' : '';
+          const statusLabel = a.status === 'CONNECTED' ? 'In Live Call' : a.status;
+
+          let activity = 'Ready for next borrower';
+          if (a.status === 'CONNECTED' && a.current_borrower_name) {
+            activity = `Talking to <strong>${escapeHtml(a.current_borrower_name)}</strong> (${escapeHtml(a.current_borrower_phone || '')})`;
+          } else if (['RESERVED', 'DIALING'].includes(a.status) && a.current_borrower_name) {
+            activity = `Dialing <strong>${escapeHtml(a.current_borrower_name)}</strong> (${escapeHtml(a.current_borrower_phone || '')})`;
+          } else if (a.status === 'WRAP_UP') {
+            activity = 'Finishing post-call wrap-up notes';
+          } else if (a.status === 'PAUSED') {
+            activity = 'Paused on break';
+          } else if (a.status === 'OFFLINE') {
+            activity = 'Logged out / Offline';
+          }
+
+          let actions = '';
+          if (a.status === 'WRAP_UP') {
+            const notesBtn = a.last_completed_call_id
+              ? `<button class="sm" onclick="openNotesModal('${a.last_completed_call_id}')">Add Notes</button> `
+              : '';
+            actions = `${notesBtn}<button class="sm primary" onclick="transitionAgent('${a.id}', 'AVAILABLE')">Mark Free Now</button>`;
+          } else if (a.status === 'AVAILABLE') {
+            actions = `<button class="sm" onclick="transitionAgent('${a.id}', 'PAUSED')">Pause</button> <button class="sm" onclick="transitionAgent('${a.id}', 'OFFLINE')">Offline</button>`;
+          } else if (a.status === 'PAUSED' || a.status === 'OFFLINE') {
+            actions = `<button class="sm success" onclick="transitionAgent('${a.id}', 'AVAILABLE')">Set Available</button>`;
+          } else if (a.status === 'CONNECTED' && a.current_call_id) {
+            actions = `<button class="sm danger-outline" onclick="sendWebhook('${a.current_call_id}', 'COMPLETED')">End Call</button>`;
+          } else {
+            actions = '<span class="card-sub">Dialing...</span>';
+          }
+
+          return `
+            <tr>
+              <td><div class="row"><span class="avatar">${escapeHtml(initials)}</span><strong>${escapeHtml(a.name)}</strong></div></td>
+              <td><span class="pill ${pillCls}">${escapeHtml(statusLabel)}</span></td>
+              <td style="font-size:0.81rem;">${activity}</td>
+              <td style="font-size:0.81rem;">${a.completed_calls} done (${a.calls_handled} total) &middot; ${a.avg_talk_duration_sec}s avg</td>
+              <td><div class="row">${actions}</div></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Render Who Talked to Whom history
+      const histBox = document.getElementById('callHistoryList');
+      const histCalls = calls.filter(c => {
+        if (!q) return true;
+        const hay = `${c.borrower_name || ''} ${c.borrower_phone || ''} ${c.agent_name || ''} ${c.status}`.toLowerCase();
+        return hay.includes(q);
+      });
+
+      if (histCalls.length === 0) {
+        histBox.innerHTML = '<div class="card-sub">No calls recorded yet for this filter.</div>';
+      } else {
+        histBox.innerHTML = histCalls.map(c => {
+          const pillCls = c.status === 'COMPLETED' ? 'ok' : ['FAILED', 'CANCELLED'].includes(c.status) ? 'err' : c.status === 'CONNECTED' ? 'info' : 'warn';
+          const who = c.agent_name ? `Handled by <strong>${escapeHtml(c.agent_name)}</strong>` : 'No agent connected';
+          const durText = c.duration_seconds ? ` &middot; ${Math.round(c.duration_seconds)}s` : '';
+          const ts = c.created_at ? new Date(c.created_at).toLocaleTimeString() : '';
+          const dispBadge = c.disposition ? `<span class="pill purple">${escapeHtml(c.disposition)}</span>` : '';
+          const notesBlock = c.call_notes
+            ? `<div style="margin-top:6px; padding:7px 10px; background:var(--subtle); border-left:3px solid var(--primary); border-radius:6px; font-size:0.79rem; color:var(--text);">"${escapeHtml(c.call_notes)}"</div>`
+            : '';
+          const noteActionBtn = c.agent_name
+            ? `<button class="sm ghost" style="margin-top:4px;" onclick="openNotesModal('${c.id}')">${c.call_notes ? 'Edit Notes' : '+ Add Notes'}</button>`
+            : '';
+          return `
+            <div class="feed-entry" style="justify-content:space-between;">
+              <div style="flex:1;">
+                <div><strong>${escapeHtml(c.borrower_name || 'Borrower')}</strong> <span class="card-sub">${escapeHtml(c.borrower_phone || '')}</span></div>
+                <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:2px;">&rarr; ${who}</div>
+                <div class="row" style="margin-top:4px;">
+                  <span class="pill ${pillCls}">${escapeHtml(c.status)}${durText}${c.termination_reason ? ' · ' + escapeHtml(c.termination_reason) : ''}</span>
+                  ${dispBadge}
+                </div>
+                ${notesBlock}
+                ${noteActionBtn}
+              </div>
+              <span class="feed-time">${ts}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    async function createCampaign() {
+      const name = document.getElementById('newCampaignName').value.trim() || 'Collections Live';
+      const mode = document.getElementById('newCampaignMode').value;
+      const c = await api('/api/v1/campaigns', { method: 'POST', body: JSON.stringify({ name, mode }) });
+      currentCampaignId = c.id;
+      closeModal('campaignModal');
+      await loadCampaigns();
+    }
+
+    async function setMode(mode) {
+      if (!currentCampaignId) return;
+      await api(`/api/v1/campaigns/${currentCampaignId}`, { method: 'PATCH', body: JSON.stringify({ mode }) });
+      await refreshCampaignView();
+    }
+
+    async function submitAgentsModal() {
+      if (!currentCampaignId) return;
+      const rawNames = document.getElementById('agentNamesInput').value.trim();
+      const status = document.getElementById('agentInitStatus').value;
+      let agents;
+      if (rawNames) {
+        agents = rawNames.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name, status }));
+      } else {
+        const count = Math.max(1, Math.min(100, parseInt(document.getElementById('agentCountInput').value || '5', 10)));
+        const startIdx = cachedAgents.length + 1;
+        agents = Array.from({ length: count }, (_, i) => ({ name: `Agent-${startIdx + i}`, status }));
+      }
+      await api(`/api/v1/campaigns/${currentCampaignId}/agents`, { method: 'POST', body: JSON.stringify({ agents }) });
+      document.getElementById('agentNamesInput').value = '';
+      closeModal('agentsModal');
+      await refreshCampaignView();
+    }
+
+    async function submitBorrowersModal() {
+      if (!currentCampaignId) return;
+      const bulk = document.getElementById('borrowersBulkInput').value.trim();
+      let borrowers;
+      if (bulk) {
+        borrowers = bulk.split('\n').map(line => line.trim()).filter(Boolean).map((line, i) => {
+          const parts = line.split(',').map(x => x.trim());
+          return {
+            name: parts[0] || `Borrower-${i + 1}`,
+            phone_number: parts[1] || `+1555${String(2000000 + Math.floor(Math.random() * 7999999)).slice(0, 7)}`,
+            priority: i % 3,
+          };
+        });
+      } else {
+        const count = Math.max(1, Math.min(200, parseInt(document.getElementById('borrowerGenCount').value || '10', 10)));
+        borrowers = Array.from({ length: count }, (_, i) => ({
+          name: FRIENDLY_NAMES[i % FRIENDLY_NAMES.length] + ` #${Math.floor(10 + Math.random() * 89)}`,
+          phone_number: `+1555${String(1000000 + Math.floor(Math.random() * 8999999)).slice(0, 7)}`,
+          priority: i % 3,
+        }));
+      }
+      await api(`/api/v1/campaigns/${currentCampaignId}/borrowers`, { method: 'POST', body: JSON.stringify({ borrowers }) });
+      logFeed(`Added ${borrowers.length} borrower(s) to the call queue.`);
+      document.getElementById('borrowersBulkInput').value = '';
+      closeModal('borrowersModal');
+      await refreshCampaignView();
+    }
+
+    async function seedDemoPool() {
+      if (!currentCampaignId) return;
+      const startIdx = cachedAgents.length + 1;
+      const agents = Array.from({ length: 10 }, (_, i) => ({ name: `Agent-${startIdx + i}`, status: 'AVAILABLE' }));
+      const borrowers = Array.from({ length: 25 }, (_, i) => ({
+        name: `${FRIENDLY_NAMES[i % FRIENDLY_NAMES.length]} (${i + 1})`,
+        phone_number: `+1555${String(1000000 + Math.floor(Math.random() * 8999999)).slice(0, 7)}`,
+        priority: i % 3,
+      }));
+      await api(`/api/v1/campaigns/${currentCampaignId}/agents`, { method: 'POST', body: JSON.stringify({ agents }) });
+      await api(`/api/v1/campaigns/${currentCampaignId}/borrowers`, { method: 'POST', body: JSON.stringify({ borrowers }) });
+      logFeed('Loaded Demo Data: 10 AVAILABLE agents and 25 borrowers ready to dial.');
+      await refreshCampaignView();
+    }
+
+    async function triggerDial(overrideProvider = null) {
+      if (!currentCampaignId) return;
+      const prov = overrideProvider || document.getElementById('dialProviderSelect').value || 'provider_a';
+      await api(`/api/v1/campaigns/${currentCampaignId}/dial`, {
+        method: 'POST',
+        body: JSON.stringify({ provider_name: prov, dispatch_immediately: true }),
+      });
+      await refreshCampaignView();
+    }
+
+    function toggleAutoDial() {
+      const track = document.getElementById('autoDialTrack');
+      const label = document.getElementById('autoDialLabel');
+      if (autoDialTimer) {
+        clearInterval(autoDialTimer);
+        autoDialTimer = null;
+        track.classList.remove('on');
+        label.textContent = 'Auto-Dial: OFF';
+        logFeed('Auto-Dial stopped.');
+      } else {
+        track.classList.add('on');
+        label.textContent = 'Auto-Dial: ON';
+        logFeed('Auto-Dial enabled (running wave every 4s).');
+        triggerDial().catch(() => {});
+        autoDialTimer = setInterval(() => triggerDial().catch(() => {}), 4000);
+      }
+    }
+
+    async function transitionAgent(agentId, targetState) {
+      await api(`/api/v1/agents/${agentId}/transition`, {
+        method: 'POST',
+        body: JSON.stringify({ target_state: targetState }),
+      });
+      await refreshCampaignView();
+    }
+
+    async function toggleProviderOutage(providerName) {
+      await api(`/api/v1/providers/${providerName}/health`, {
+        method: 'POST',
+        body: JSON.stringify({ degraded: !providerADegraded }),
+      });
+      await refreshHealth();
+      await refreshCampaignView();
+    }
+
+    let activeNotesCallId = null;
+
+    function openNotesModal(callId) {
+      activeNotesCallId = callId;
+      const call = cachedCalls.find(c => c.id === callId);
+      const dispSel = document.getElementById('callDispositionSelect');
+      const notesArea = document.getElementById('callNotesText');
+      const ctx = document.getElementById('notesCallContext');
+      const saveFreeBtn = document.getElementById('saveAndFreeBtn');
+
+      if (call) {
+        ctx.textContent = `${call.agent_name || 'Agent'} ↔ ${call.borrower_name || 'Borrower'} (${call.borrower_phone || ''})`;
+        dispSel.value = call.disposition || 'Promise to Pay';
+        notesArea.value = call.call_notes || '';
+        const ag = cachedAgents.find(a => a.id === call.agent_id);
+        saveFreeBtn.style.display = (ag && ag.status === 'WRAP_UP') ? 'inline-block' : 'none';
+      } else {
+        ctx.textContent = `Call ${callId.slice(0, 8)}`;
+        notesArea.value = '';
+        saveFreeBtn.style.display = 'inline-block';
+      }
+      openModal('notesModal');
+    }
+
+    async function submitCallNotes(completeWrapUp) {
+      if (!activeNotesCallId) return;
+      const text = document.getElementById('callNotesText').value.trim();
+      if (!text) return;
+      const disposition = document.getElementById('callDispositionSelect').value;
+      await api(`/api/v1/calls/${activeNotesCallId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify({
+          disposition,
+          call_notes: text,
+          complete_wrap_up: completeWrapUp,
+        }),
+      });
+      closeModal('notesModal');
+      await refreshCampaignView();
+    }
+
+    async function sendWebhook(callId, eventType, reuseLastId = false) {
+      const eventId = (reuseLastId && lastEventId) ? lastEventId : `ui-evt-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`;
+      lastEventId = eventId;
+      const res = await api('/api/v1/webhooks/provider/provider_a', {
+        method: 'POST',
+        body: JSON.stringify({
+          event_id: eventId,
+          call_id: callId,
+          event_type: eventType,
+          payload: { duration_seconds: 95, answer_timeout_sec: 0.1 },
+        }),
+      });
+      await refreshCampaignView();
+      if (eventType === 'COMPLETED' && !res.is_duplicate && !res.is_out_of_order) {
+        openNotesModal(callId);
+      }
+    }
+
+    async function runSimulations() {
+      const btn = document.getElementById('runSimsBtn');
+      btn.disabled = true;
+      btn.textContent = 'Running on PostgreSQL...';
+      try {
+        const data = await api('/api/v1/simulations/run', {
+          method: 'POST',
+          body: JSON.stringify({ scenario: 'ALL', num_agents: 16, num_borrowers: 60, cycles: 3 }),
+        });
+
+        document.getElementById('scenarioCardsGrid').innerHTML = data.scenarios.map(s => `
+          <div class="pipe-step">
+            <div class="pipe-step-title">
+              <span>Scenario ${escapeHtml(s.scenario)} (${(s.answer_rate_target * 100).toFixed(0)}%)</span>
+              <span class="pill ok">${s.safety_invariant_violations} Violations</span>
+            </div>
+            <div class="pipe-step-desc" style="margin-bottom:6px;">${escapeHtml(s.description)}</div>
+            <div style="font-size:0.8rem; font-weight:600;">
+              ${s.calls_initiated} Dialed &middot; ${s.calls_connected} Connected &middot; ${s.abandonment_rate_pct}% Dropped &middot; ${s.agent_utilization_pct}% Busy
+            </div>
+          </div>
+        `).join('');
+
+        const fd = data.failure_demos;
+        const cards = [
+          {
+            title: 'Worker Crash Recovery',
+            ok: fd.worker_crash_recovery.agent_status === 'AVAILABLE',
+            steps: ['Worker crashed in RESERVED', 'Reconciler reclaimed stale lock', `Agent ${fd.worker_crash_recovery.agent_status} & Borrower ${fd.worker_crash_recovery.borrower_status}`],
+          },
+          {
+            title: 'Carrier Outage & Recovery',
+            ok: fd.provider_outage_and_recovery.outage_decision === 'FALLBACK_TO_PROGRESSIVE' && fd.provider_outage_and_recovery.recovered_decision === 'APPROVED',
+            steps: ['Provider A degraded', `Safety: ${fd.provider_outage_and_recovery.outage_decision}`, `Recovered: ${fd.provider_outage_and_recovery.recovered_decision}`],
+          },
+          {
+            title: 'Sudden Agent Drop (100 → 60)',
+            ok: fd.agent_availability_drop_100_to_60.approved === 60,
+            steps: [`Stale pacer requested ${fd.agent_availability_drop_100_to_60.requested}`, `40 agents vanished (${fd.agent_availability_drop_100_to_60.available_observed} left)`, `Safety capped to ${fd.agent_availability_drop_100_to_60.approved}`],
+          },
+          {
+            title: 'Duplicate & Out-of-Order Events',
+            ok: fd.duplicate_and_out_of_order_events.duplicate_acknowledged_safely && fd.duplicate_and_out_of_order_events.late_ringing_blocked,
+            steps: ['Duplicate ANSWERED ignored', 'Late RINGING blocked', `Final status: ${fd.duplicate_and_out_of_order_events.final_call_status}`],
+          },
+        ];
+
+        document.getElementById('failureDemoGrid').innerHTML = cards.map(c => `
+          <div class="pipe-step">
+            <div class="pipe-step-title">
+              <span>${escapeHtml(c.title)}</span>
+              <span class="pill ${c.ok ? 'ok' : 'err'}">${c.ok ? 'PASSED' : 'CHECK'}</span>
+            </div>
+            <div class="flow-badges">
+              <span class="pill warn">${escapeHtml(c.steps[0])}</span>
+              <span>&rarr;</span>
+              <span class="pill info">${escapeHtml(c.steps[1])}</span>
+              <span>&rarr;</span>
+              <span class="pill ok">${escapeHtml(c.steps[2])}</span>
+            </div>
+          </div>
+        `).join('');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Run All 4 Scenarios + Recovery Tests';
+      }
+    }
+
+    async function runLiveBenchmark() {
+      const btn = document.getElementById('runBenchBtn');
+      btn.disabled = true;
+      btn.textContent = 'Benchmarking PostgreSQL...';
+      try {
+        const res = await api('/api/v1/benchmarks/run', { method: 'POST' });
+        const maxTp = Math.max(...res.tiers.map(t => t.throughput_allocs_per_sec), 1);
+        const totalErrs = res.tiers.reduce((acc, t) => acc + t.errors + t.duplicate_agent_assignments + t.duplicate_borrower_assignments, 0);
+        document.getElementById('benchSafetyBadge').textContent = `${totalErrs} Double-Booked Agents · ${totalErrs} Errors`;
+        document.getElementById('benchChartArea').innerHTML = res.tiers.map(t => `
+          <div class="bench-bar-row">
+            <strong>${t.tier_agents.toLocaleString()} Agents</strong>
+            <div class="bench-track"><div class="bench-fill" style="width:${Math.max(15, (t.throughput_allocs_per_sec / maxTp) * 100)}%"></div></div>
+            <span>${t.total_duration_sec}s &middot; <strong>${t.throughput_allocs_per_sec} allocs/s</strong> (${t.duplicate_agent_assignments} dup)</span>
+          </div>
+        `).join('');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Run Live 100 / 1,000 Test';
+      }
+    }
+
+    let selectedSoftphoneAgentId = null;
+    let softphoneMuted = false;
+    let softphoneHold = false;
+    let softphoneVoiceOn = false;
+    let softphoneCallId = null;
+    let softphoneStartedAt = null;
+    let softphoneChatLines = [];
+
+    const SOFTPHONE_SCRIPT = [
+      {
+        agent: "Hello! Calling from SmartDialer collections regarding your account. Am I speaking with the account holder?",
+        customer: "Hi, yes this is me. What is this call regarding?",
+      },
+      {
+        agent: "I'm calling about the open $250 balance on your account. We have flexible settlement and payment-plan options available today.",
+        customer: "Oh yes, I wanted to clear that. Can I pay $250 this Friday instead of today?",
+      },
+      {
+        agent: "Absolutely! I can schedule a Promise to Pay for $250 this Friday and waive any late reminder fees.",
+        customer: "That works great, thank you. Can you send the payment link via SMS?",
+      },
+      {
+        agent: "I've sent the SMS payment link right now and noted Friday on your account. Have a great day!",
+        customer: "Got it, thank you very much. Goodbye!",
+      },
+    ];
+
+    function onSoftphoneAgentChange() {
+      selectedSoftphoneAgentId = document.getElementById('softphoneAgentSelect').value;
+      renderSoftphoneTab();
+    }
+
+    function toggleSoftphoneVoice() {
+      softphoneVoiceOn = !softphoneVoiceOn;
+      document.getElementById('voiceTtsBtn').textContent = `Voice Aloud (TTS): ${softphoneVoiceOn ? 'ON' : 'OFF'}`;
+    }
+
+    function speakLine(text, isCustomer = false) {
+      if (!softphoneVoiceOn || !('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.pitch = isCustomer ? 1.12 : 0.95;
+        u.rate = 1.02;
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+
+    function formatTimer(sec) {
+      const m = String(Math.floor(sec / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function renderSoftphoneChat() {
+      const box = document.getElementById('softphoneChat');
+      if (!box) return;
+      if (softphoneChatLines.length === 0) {
+        box.innerHTML = '<div class="card-sub">Answer or connect a call on the left, then click a script prompt below to simulate talking with the customer.</div>';
+        return;
+      }
+      box.innerHTML = softphoneChatLines.map(line => `
+        <div class="feed-entry">
+          <span class="pill ${line.speaker === 'Agent' ? 'info' : 'ok'}" style="flex-shrink:0;">${escapeHtml(line.speaker)}</span>
+          <div>
+            <div>${escapeHtml(line.text)}</div>
+            <div class="feed-time">${escapeHtml(line.time)}</div>
+          </div>
+        </div>
+      `).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function softphoneAgentReply(idx) {
+      const ag = cachedAgents.find(a => a.id === selectedSoftphoneAgentId);
+      if (!ag || ag.status !== 'CONNECTED') {
+        logFeed('Connect an active call in Agent Softphone first before sending dialogue.', 'ERR');
+        return;
+      }
+      const step = SOFTPHONE_SCRIPT[idx];
+      if (!step) return;
+      const nowStr = new Date().toLocaleTimeString();
+      softphoneChatLines.push({ speaker: ag.name, text: step.agent, time: nowStr });
+      softphoneChatLines.push({ speaker: ag.current_borrower_name || 'Customer', text: step.customer, time: nowStr });
+      renderSoftphoneChat();
+      speakLine(step.customer, true);
+    }
+
+    function copyChatToNotes() {
+      const summary = softphoneChatLines.map(l => `${l.speaker}: ${l.text}`).join('\n');
+      const el = document.getElementById('softphoneWrapNotes');
+      if (el) {
+        el.value = summary || 'Customer call completed via Agent Softphone.';
+      } else {
+        document.getElementById('callNotesText').value = summary;
+      }
+      logFeed('Copied dialogue summary to Wrap-Up Notes.');
+    }
+
+    function toggleSoftphoneMute() {
+      softphoneMuted = !softphoneMuted;
+      renderSoftphoneTab();
+    }
+
+    function toggleSoftphoneHold() {
+      softphoneHold = !softphoneHold;
+      renderSoftphoneTab();
+    }
+
+    async function dialCustomNumber() {
+      if (!currentCampaignId) return;
+      const name = (document.getElementById('spCustomName').value || '').trim() || 'Test Customer';
+      const phone = (document.getElementById('spCustomPhone').value || '').trim();
+      if (!phone) {
+        logFeed('Enter a valid phone number (e.g. +15550199 or +91...) to dial.', 'ERR');
+        return;
+      }
+      await api(`/api/v1/campaigns/${currentCampaignId}/borrowers`, {
+        method: 'POST',
+        body: JSON.stringify({ borrowers: [{ name, phone_number: phone, priority: 999 }] }),
+      });
+      await triggerDial();
+      switchTab('softphone');
+    }
+
+    async function softphoneHangUp(callId) {
+      const elapsed = softphoneStartedAt ? Math.max(5, Math.round((Date.now() - softphoneStartedAt) / 1000)) : 45;
+      softphoneMuted = false;
+      softphoneHold = false;
+      await api('/api/v1/webhooks/provider/' + (document.getElementById('dialProviderSelect').value || 'provider_a').replace('twilio', 'provider_a'), {
+        method: 'POST',
+        body: JSON.stringify({
+          event_id: `sp-comp-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+          call_id: callId,
+          event_type: 'COMPLETED',
+          payload: { duration_seconds: elapsed },
+        }),
+      });
+      await refreshCampaignView();
+    }
+
+    async function submitSoftphoneWrapUp(callId) {
+      if (!callId) return;
+      const notes = (document.getElementById('softphoneWrapNotes').value || '').trim();
+      if (!notes) {
+        logFeed('Please enter wrap-up call notes before marking free.', 'ERR');
+        return;
+      }
+      const disposition = document.getElementById('softphoneWrapDisp').value;
+      await api(`/api/v1/calls/${callId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify({ disposition, call_notes: notes, complete_wrap_up: true }),
+      });
+      softphoneChatLines = [];
+      softphoneCallId = null;
+      softphoneStartedAt = null;
+      await refreshCampaignView();
+    }
+
+    function renderSoftphoneTab() {
+      const sel = document.getElementById('softphoneAgentSelect');
+      const card = document.getElementById('softphoneCard');
+      const pill = document.getElementById('softphoneStatusPill');
+      if (!sel || !card) return;
+
+      sel.innerHTML = '';
+      if (cachedAgents.length === 0) {
+        sel.innerHTML = '<option value="">No agents available</option>';
+        pill.textContent = 'Offline';
+        pill.className = 'pill';
+        card.innerHTML = '<div class="card-sub">No agents in this campaign yet. Click <strong>+ Add Agents</strong> or <strong>Demo Data</strong> on Tab 1 first.</div>';
+        return;
+      }
+
+      for (const a of cachedAgents) {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = `${a.name} (${a.status})`;
+        sel.appendChild(opt);
+      }
+      if (!selectedSoftphoneAgentId || !cachedAgents.some(a => a.id === selectedSoftphoneAgentId)) {
+        const preferred = cachedAgents.find(a => ['CONNECTED', 'DIALING', 'RESERVED', 'WRAP_UP', 'AVAILABLE'].includes(a.status));
+        selectedSoftphoneAgentId = preferred ? preferred.id : cachedAgents[0].id;
+      }
+      sel.value = selectedSoftphoneAgentId;
+      const ag = cachedAgents.find(a => a.id === selectedSoftphoneAgentId);
+      const pillCls = ag.status === 'AVAILABLE' ? 'ok' : ag.status === 'CONNECTED' ? 'info' : ag.status === 'WRAP_UP' ? 'purple' : ['RESERVED', 'DIALING'].includes(ag.status) ? 'warn' : '';
+      pill.textContent = ag.status;
+      pill.className = `pill ${pillCls}`;
+
+      const activeCall = cachedCalls.find(c => c.id === ag.current_call_id) || cachedCalls.find(c => c.agent_id === ag.id && !['COMPLETED', 'FAILED', 'CANCELLED'].includes(c.status));
+
+      if (ag.status === 'CONNECTED' && activeCall) {
+        if (softphoneCallId !== activeCall.id) {
+          softphoneCallId = activeCall.id;
+          softphoneStartedAt = Date.now();
+          if (softphoneChatLines.length === 0) {
+            softphoneChatLines = [{
+              speaker: activeCall.borrower_name || 'Customer',
+              text: 'Hello?',
+              time: new Date().toLocaleTimeString(),
+            }];
+            speakLine('Hello?', true);
+          }
+        }
+        const elapsed = softphoneStartedAt ? Math.floor((Date.now() - softphoneStartedAt) / 1000) : 0;
+        card.innerHTML = `
+          <div class="card-header">
+            <div>
+              <span class="pill ok"><span class="dot"></span>LIVE CALL CONNECTED</span>
+              <h2 class="card-title" style="margin-top:8px; font-size:1.15rem;">Talking to ${escapeHtml(activeCall.borrower_name || 'Customer')}</h2>
+              <div class="card-sub">${escapeHtml(activeCall.borrower_phone || '')} &middot; Mode: ${escapeHtml(activeCall.dialing_mode)}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="card-sub">Call Timer</div>
+              <div id="softphoneTimer" style="font-size:1.6rem; font-weight:800; font-variant-numeric:tabular-nums;">${formatTimer(elapsed)}</div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:12px;">
+            <button onclick="toggleSoftphoneMute()">${softphoneMuted ? 'Unmute Mic' : 'Mute Mic'}</button>
+            <button onclick="toggleSoftphoneHold()">${softphoneHold ? 'Resume Call' : 'Put on Hold'}</button>
+            <button class="danger-outline" onclick="softphoneHangUp('${activeCall.id}')">Hang Up &amp; Log Wrap-Up</button>
+          </div>
+          <div class="card-sub" style="margin-top:10px;">
+            Mic: <strong>${softphoneMuted ? 'Muted' : 'Live'}</strong> &middot; Line: <strong>${softphoneHold ? 'On Hold' : 'Active Audio Bridge'}</strong>
+          </div>
+        `;
+      } else if (['RESERVED', 'DIALING'].includes(ag.status) && activeCall) {
+        card.innerHTML = `
+          <div class="card-header">
+            <div>
+              <span class="pill warn"><span class="dot"></span>OUTBOUND RINGING</span>
+              <h2 class="card-title" style="margin-top:8px;">Calling ${escapeHtml(activeCall.borrower_name || 'Customer')}</h2>
+              <div class="card-sub">${escapeHtml(activeCall.borrower_phone || '')} &middot; Carrier: ${escapeHtml(activeCall.provider_name || 'provider_a')}</div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:12px;">
+            <button class="primary" onclick="sendWebhook('${activeCall.id}', 'ANSWERED')">Simulate Customer Picks Up</button>
+            <button onclick="sendWebhook('${activeCall.id}', 'FAILED')">Customer No Answer</button>
+          </div>
+        `;
+      } else if (ag.status === 'WRAP_UP') {
+        const wCallId = ag.last_completed_call_id;
+        const wBorr = ag.last_completed_borrower_name || 'Customer';
+        const prefill = softphoneChatLines.length > 0 ? softphoneChatLines.map(l => `${l.speaker}: ${l.text}`).join(' | ') : '';
+        card.innerHTML = `
+          <div class="card-header">
+            <div>
+              <span class="pill purple">WRAP-UP STAGE</span>
+              <h2 class="card-title" style="margin-top:8px;">Log Call Notes for ${escapeHtml(wBorr)}</h2>
+              <div class="card-sub">Save your wrap-up disposition &amp; notes to become AVAILABLE for the next customer</div>
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px;">
+            <label for="softphoneWrapDisp">Outcome / Disposition</label>
+            <select id="softphoneWrapDisp">
+              <option value="Promise to Pay">Promise to Pay</option>
+              <option value="Resolved">Resolved / Issue Settled</option>
+              <option value="Callback Scheduled">Callback Scheduled</option>
+              <option value="Disputed">Customer Disputed</option>
+            </select>
+          </div>
+          <div class="field" style="margin-top:10px;">
+            <label for="softphoneWrapNotes">Agent Call Notes</label>
+            <textarea id="softphoneWrapNotes" rows="3" placeholder="Summarize what was agreed on the call...">${escapeHtml(prefill)}</textarea>
+          </div>
+          <div class="row" style="margin-top:12px;">
+            ${wCallId
+              ? `<button class="primary" onclick="submitSoftphoneWrapUp('${wCallId}')">Save Notes &amp; Ready for Next Call</button>`
+              : `<button class="primary" onclick="transitionAgent('${ag.id}', 'AVAILABLE')">Mark Ready Now</button>`}
+          </div>
+        `;
+      } else if (ag.status === 'AVAILABLE') {
+        card.innerHTML = `
+          <div class="card-header">
+            <div>
+              <span class="pill ok"><span class="dot"></span>READY FOR CALLS</span>
+              <h2 class="card-title" style="margin-top:8px;">${escapeHtml(ag.name)} is Waiting</h2>
+              <div class="card-sub">Click below to safely allocate &amp; dial the next waiting customer through the Safety Controller</div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button class="primary" onclick="triggerDial()">Dial Next Waiting Customer</button>
+            <button onclick="transitionAgent('${ag.id}', 'PAUSED')">Take Break (Pause)</button>
+          </div>
+          <hr style="border:none; border-top:1px solid var(--border); margin:16px 0;" />
+          <div class="card-title" style="font-size:0.86rem; margin-bottom:6px;">Or Test Dialing a Specific Phone Number</div>
+          <div class="row">
+            <input id="spCustomName" placeholder="Customer Name" value="My Test Phone" style="flex:1; min-width:120px;" />
+            <input id="spCustomPhone" placeholder="+15550199" style="flex:1; min-width:130px;" />
+            <button onclick="dialCustomNumber()">Add &amp; Dial Number</button>
+          </div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="card-header">
+            <div>
+              <span class="pill">${escapeHtml(ag.status)}</span>
+              <h2 class="card-title" style="margin-top:8px;">${escapeHtml(ag.name)} is Not Taking Calls</h2>
+            </div>
+          </div>
+          <button class="success" onclick="transitionAgent('${ag.id}', 'AVAILABLE')">Go Available to Take Calls</button>
+        `;
+      }
+      renderSoftphoneChat();
+    }
+
+    setInterval(() => {
+      const tEl = document.getElementById('softphoneTimer');
+      if (tEl && softphoneStartedAt) {
+        tEl.textContent = formatTimer(Math.floor((Date.now() - softphoneStartedAt) / 1000));
+      }
+    }, 1000);
+
+    refreshHealth();
+    loadCampaigns();
+    setInterval(refreshHealth, 5000);
+  </script>
+</body>
+</html>
