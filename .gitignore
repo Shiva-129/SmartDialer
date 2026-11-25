@@ -1,0 +1,35 @@
+# Byte-compiled / caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Packaging / builds
+build/
+dist/
+*.egg-info/
+*.spec
+.eggs/
+
+# Environment & local secrets
+.env
+.env.*
+!.env.example
+*.log
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local assignment PDF & database data
+Tech Assignment*.pdf
+pgdata/
